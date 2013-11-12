@@ -1,0 +1,27 @@
+<head>
+  <title>dropsync</title>
+</head>
+
+<body>
+  {{> top}}
+</body>
+
+<template name="top">
+  <audio id="player" controls> </audio><br>
+  <input type="button" class="linkDropbox" value="Link my dropbox"></input>
+  {{> dropboxes}}
+</template>
+
+<template name="dropboxes">
+  <h1>Linked Dropboxes</h1>
+  <ul>
+  {{#each dropboxes}}
+    <li>{{name}} #{{uid}}</li>
+    <ul>
+    {{#each files}}
+      <li class="song">{{path}}</li>
+    {{/each}}
+    </ul>
+  {{/each}}
+  </ul>
+</template>

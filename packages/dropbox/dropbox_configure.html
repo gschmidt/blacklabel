@@ -1,0 +1,25 @@
+<template name="configureLoginServiceDialogForDropbox">
+  <p>
+    First, you'll need to get a Dropbox Client ID. Follow these steps:
+  </p>
+  <ol>
+    <li>
+      Visit <a href="https://www.dropbox.com/developers/apps/create" target="blank">https://www.dropbox.com/developers/apps/create</a>
+    </li>
+    <li>
+      Choose 'Dropbox API app'. Pick a name for your app and follow
+      the prompts.
+    </li>
+    <li>
+      When you have created your app and see the Settings tab, enter
+      the followig next to 'OAuth redirect URIs' and click Add:
+      <span class="url">{{siteUrl}}_oauth/dropbox?close</span>
+    </li>
+    <li>
+      Click the 'enable additional users' button. This will be good
+      for your app's first 100 users. After that you will have to
+      click the 'Apply for production' button to ask Dropbox to raise
+      your user limit.
+    </li>
+  </ol>
+</template>
