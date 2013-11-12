@@ -1,0 +1,49 @@
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+.main-container, .main-row, .main-span {
+    height: 100%;
+}
+
+@chat-entry-height: 100px;
+
+.chat-outer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+
+.chat-inner {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.chat-view {
+    position: absolute;
+    top: 0;
+    bottom: @chat-entry-height;
+    left: 0;
+    right: 0;
+    overflow: auto;
+}
+
+.chat-entry {
+    position: absolute;
+    height: @chat-entry-height;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+
+.chat-entry textarea {
+    width: 100%;
+    height: @chat-entry-height - 20px;
+    resize: none;
+}
+

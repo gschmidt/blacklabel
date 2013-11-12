@@ -10,3 +10,7 @@ preserve-inputs
 dropbox
 accounts-base
 http
+accounts-password
+bootstrap
+font-awesome
+less

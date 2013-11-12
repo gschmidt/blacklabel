@@ -1,16 +1,90 @@
 <head>
-  <title>dropsync</title>
+  <title>Blacklabel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 
 <body>
-  {{> top}}
+  {{#if currentUser}}
+    {{> top}}
+  {{else}}
+    {{> login}}
+  {{/if}}
 </body>
 
+<template name="login">
+  <div class="loginForm">
+    <h1>Hello</h1>
+    <p>This is a private Blacklabel server. You must now present your
+      bona fides.</p>
+    {{#if loggingIn}}
+      Logging in ...
+    {{else}}
+      {{#if error}}
+        <div class="error">{{error}}</div>
+      {{/if}}
+    {{/if}}
+    <label>Username: <input type="text" class="username"></label><br>
+    <label>Password: <input type="password" class="password"></label><br>
+    <input type="button" class="login" value="Enter server">
+
+    <br><br><br>
+    To create an account, open the console and type something like:<br>
+    <pre>Accounts.createUser({username: "you", password: "kitten"})</pre>
+
+  </div>
+</template>
+
 <template name="top">
-  <audio id="player" controls> </audio><br>
+  <div class="container-fluid main-container">
+    <div class="row-fluid main-row">
+      <div class="span2 main-span">
+        {{> leftPane }}
+      </div>
+
+      <div class="span5 main-span">
+        {{> chatPane }}
+      </div>
+
+      <div class="span5 main-span">
+        <audio id="player" controls> </audio><br>
+        <h1>Queue</h1>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template name="leftPane">
+  <ul class="nav nav-pills nav-stacked">
+    {{#each activities}}
+      <li class="{{maybeActive}}">
+        <a><i class="fa {{icon}} fa-2x fa-fw"></i>{{name}}</a>
+      </li>
+    {{/each}}
+  </ul>
+</template>
+
+<template name="chatPane">
+  <div class="chat-outer">
+    <div class="chat-inner">
+      <div class="chat-view">
+        {{#each events}}
+          <div class="chat-message">
+            {{username}}: {{message}}
+          </div>
+          {{/each}}
+      </div>
+      <div class="chat-entry">
+        <textarea></textarea>
+      </div>
+    </div>
+  </div>
+</template>
+
+<template name="accountPane">
   <input type="button" class="linkDropbox" value="Link my dropbox"></input>
   {{> dropboxes}}
 </template>
+
 
 <template name="dropboxes">
   <h1>Linked Dropboxes</h1>
