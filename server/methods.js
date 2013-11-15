@@ -97,6 +97,10 @@ Meteor.methods({
       throw new Meteor.Error("access-denied", "That doesn't belong to you");
 
     Dropboxes.remove({ _id: dropboxId, user: this.userId });
+    Files.remove({ dropbox: dropboxId });
+
+    // XXX really should remove QueuedSongs that point at Files we've
+    // just removed and fix up PlayStatus.. meh, whatever
   },
 
   // XXX latency-compensate! (don't get the URL on the client ..)

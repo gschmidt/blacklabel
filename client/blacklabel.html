@@ -108,16 +108,41 @@
 <template name="libraryPane">
   <div class="library">
     <h1>Ah. The Library.</h1>
-    <ul>
+    <table class="table table-condensed">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Artist</th>
+          <th>Album</th>
+          <th>Track</th>
+        </tr>
+      </thead>
       {{#each dropboxes}}
-        <li>{{name}} #{{uid}}</li>
-        <ul>
-          {{#each files}}
-          <li class="song">{{path}}</li>
-          {{/each}}
-        </ul>
+      {{#each files}}
+        {{#if hasMetadata}}
+          <tr class="song">
+            <td>{{metadata.title}}</td>
+            <td>{{metadata.artist}}</td>
+            <td>{{metadata.album}}</td>
+            <td>{{metadata.track}}</td>
+          </tr>
+        {{/if}}
       {{/each}}
-    </ul>
+      {{/each}}
+    </table>
+
+    {{#if anyWithoutMetadata}}
+      <h3>Files lacking tags</h3>
+
+      <table class="table table-condensed">
+      {{#each filesWithoutMetadata}}
+        <tr class="song">
+          <td>{{path}}</td>
+        </tr>
+      {{/each}}
+      </table>
+    {{/if}}
+
   </div>
 </template>
 
@@ -137,7 +162,13 @@
         <tr class="entry {{maybeSelected}} {{maybePlaying}}">
           <td>{{percentLoaded}}</td>
           <td>{{username}}</td>
-          <td>{{name}}</td>
+          {{#with file}}
+            {{#if hasMetadata}}
+              <td>{{metadata.title}} &mdash; {{metadata.artist}}</td>
+            {{else}}
+              <td>{{path}}</td>
+            {{/if}}
+          {{/with}}
         </tr>
         {{/unless}}
       {{/each}}

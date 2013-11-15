@@ -20,14 +20,6 @@ Meteor.startup(function () {
   });
 });
 
-var sleep = function (ms) {
-    var fiber = Fiber.current;
-    setTimeout(function() {
-        fiber.run();
-    }, ms);
-    Fiber.yield();
-};
-
 var poll = function (_id) {
   var info = Dropboxes.findOne(_id);
   if (! info)
@@ -125,6 +117,9 @@ var applyEntryToDropbox = function (_id, entry) {
     Files.remove({dropbox: _id, path: path});
   else {
     Files.upsert({dropbox: _id, path: path},
-                 {$set: { rev: data.rev, dirty: true } });
+                 {$set: {
+                   rev: data.rev,
+                   bytes: data.bytes,
+                   dirty: true } });
   }
 };

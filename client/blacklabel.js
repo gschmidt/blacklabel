@@ -122,7 +122,18 @@ Template.libraryPane.dropboxes = function () {
 };
 
 Template.libraryPane.files = function () {
-  return Files.find({dropbox: this._id});
+  return Files.find({ dropbox: this._id },
+                    { sort: ["metadata.artist", "metadata.album",
+                             "metadata.track", "metadata.title" ] });
+};
+
+Template.libraryPane.filesWithoutMetadata = function () {
+  return Files.find({ hasMetadata: { $ne: true } },
+                    { sort: [ "path" ] });
+};
+
+Template.libraryPane.anyWithoutMetadata = function () {
+  return Files.find({ hasMetadata: { $ne: true } }).count() > 0;
 };
 
 Template.libraryPane.events({
@@ -163,9 +174,8 @@ Template.rightPane.username = function () {
   return user && user.username || "???";
 };
 
-Template.rightPane.name = function () {
-  var file = Files.findOne(this.file);
-  return file && file.path /* XXX temporary */ || "???";
+Template.rightPane.file = function () {
+  return Files.findOne(this.file);
 };
 
 Template.rightPane.maybeSelected = function () {

@@ -4,7 +4,13 @@
 // user: Meteor user _id of user that owns this dropbox
 Dropboxes = new Meteor.Collection('dropboxes');
 
-// dropbox (_id), path, rev, dirty (boolean)
+// dropbox (_id), path, rev, bytes, dirty (boolean),
+// metadata: object with keys
+// - title
+// - artist
+// - album
+// - year (number)
+// - track (number)
 Files = new Meteor.Collection('files');
 
 // user (_id)
