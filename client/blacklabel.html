@@ -61,15 +61,25 @@
 </template>
 
 <template name="leftPane">
-  <div class="left-pane">
-    <img src="/blacklabel.png">
-    <ul class="nav nav-pills nav-stacked">
-      {{#each activities}}
-      <li class="{{maybeActive}}">
-        <a><i class="fa {{icon}} fa-2x fa-fw"></i>{{name}}</a>
-      </li>
-      {{/each}}
-    </ul>
+  <div class="left-outer">
+    <div class="left-inner">
+      <div class="left-top">
+
+        <img src="/blacklabel.png">
+        <ul class="nav nav-pills nav-stacked">
+          {{#each activities}}
+          <li class="activity {{maybeActive}}">
+            <a><i class="fa {{icon}} fa-2x fa-fw"></i>{{name}}</a>
+          </li>
+          {{/each}}
+        </ul>
+
+      </div>
+      <div class="left-bottom">
+        {{currentUser.username}}<br>
+        <a class="logout">Log out</a>
+      </div>
+    </div>
   </div>
 </template>
 

@@ -44,8 +44,11 @@ Template.leftPane.maybeActive = function (what) {
 };
 
 Template.leftPane.events({
-  'click li': function () {
+  'click li.activity': function () {
     Session.set("activity", this.id);
+  },
+  'click .logout': function () {
+    Meteor.logout();
   }
 });
 

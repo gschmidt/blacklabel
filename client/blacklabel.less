@@ -18,9 +18,42 @@ html, body {
 
 /*****************************************************************************/
 
-.left-pane {
+@left-bottom-height: 75px;
+
+.left-outer {
     .no-select;
+    position: relative;
+    width: 100%;
+    height: 100%;
 }
+
+.left-inner {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+.left-top {
+    position: absolute;
+    top: 0;
+    bottom: @left-bottom-height;
+    left: 0;
+    right: 0;
+    overflow: auto;
+}
+
+.left-bottom {
+    position: absolute;
+    height: @left-bottom-height;
+    bottom: 0;
+    left: 0;
+    right: 0;
+
+    text-align: center;
+}
+
 
 /*****************************************************************************/
 
@@ -57,7 +90,6 @@ html, body {
     left: 0;
     right: 0;
 }
-
 
 .chat-entry textarea {
     width: 100%;
