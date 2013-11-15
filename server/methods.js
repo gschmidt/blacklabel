@@ -213,5 +213,17 @@ Meteor.methods({
         median = durations[Math.floor(len / 2)];
       QueuedSongs.update(qsid, { $set: { duration: median } });
     }
+  },
+
+  getInvitationCode: function () {
+    if (! this.userId)
+      throw new Meteor.Error("access-denied", "Must be logged in");
+    var user = Meteor.users.findOne(this.userId);
+    if (user.invitationCode)
+      return user.invitationCode;
+
+    var code = generateInvitationCode();
+    Meteor.users.update(this.userId, { $set: { invitationCode: code } });
+    return code;
   }
 });

@@ -1,3 +1,10 @@
+Meteor.autorun(function () {
+  Meteor.call('getInvitationCode', function (err, code) {
+    if (! err)
+      Session.set("invitationCode", code);
+  });
+});
+
 //////////////////////////////////////////////////////////////////////////////
 
 Template.login.loggingIn = function () {
@@ -117,6 +124,13 @@ Template.accountPane.events({
                 });
   }
 });
+
+Template.accountPane.invitationLink = function () {
+  var code = Session.get("invitationCode");
+  if (! code)
+    return "[loading your code]";
+  return Meteor.absoluteUrl("engulf/" + code);
+};
 
 //////////////////////////////////////////////////////////////////////////////
 

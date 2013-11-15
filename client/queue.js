@@ -73,7 +73,6 @@ _.extend(_QueueManager.prototype, {
   },
 
   update: function () {
-    console.log("update");
     var self = this;
     var now = self.now();
 
@@ -223,9 +222,13 @@ _.extend(_QueueManager.prototype, {
 
     self.mainDep.depend();
 
+    var ps = PlayStatus.findOne();
+    if (! ps)
+      return true;
+
     var threshold =
       self.currentlyPlaying ||
-      PlayStatus.findOne().playItem ||
+      ps.playItem ||
       null;
 
     if (threshold === null)

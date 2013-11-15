@@ -37,6 +37,9 @@ QueuedSongs = new Meteor.Collection('queue');
 // Both will be null if nothing is playing.
 PlayStatus = new Meteor.Collection('playstatus');
 
+// Stuff on Meteor.user:
+// - invitationCode
+
 Meteor.methods({
   'chat': function (message) {
     check(message, String);

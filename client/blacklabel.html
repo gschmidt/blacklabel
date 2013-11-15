@@ -7,7 +7,10 @@
   {{#if currentUser}}
     {{> top}}
   {{else}}
-    {{> login}}
+    {#if loggingIn}}
+    {{else}}
+      {{> login}}
+    {{/if}}
   {{/if}}
 </body>
 
@@ -101,18 +104,27 @@
 </template>
 
 <template name="accountPane">
-  <h1>Your Account</h1>
-  <br><br>
-  I'll find something to put here.
-  <br><br>
+  <div class="account-pane">
+    <h1>Your Account</h1>
+    <br><br>
+    I'll find something to put here.
+    <br><br>
 
-  <h3>Dropbox</h3>
-  {{#if haveDropbox}}
+    <h3>Dropbox</h3>
+    {{#if haveDropbox}}
     <p>Currently linked Dropbox: <b>{{linkedDropboxName}}</b></p>
-    <input type="button" class="unlinkDropbox" value="Unlink">
-  {{else}}
-    <input type="button" class="linkDropbox" value="Link your Dropbox">
-  {{/if}}
+      <input type="button" class="unlinkDropbox" value="Unlink">
+    {{else}}
+      <input type="button" class="linkDropbox" value="Link your Dropbox">
+    {{/if}}
+
+    <br><br>
+
+    <h3>Recruitment</h3>
+    <p>To invite your friends, send them this link:</p>
+    <p class="invitationLink">{{invitationLink}}</p>
+  </div>
+
 </template>
 
 <template name="libraryPane">
