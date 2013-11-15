@@ -91,7 +91,8 @@ Template.accountPane.haveDropbox = function () {
 };
 
 Template.accountPane.linkedDropboxName = function () {
-  return Dropboxes.findOne({ user: Meteor.userId() }).name;
+  var dropbox = Dropboxes.findOne({ user: Meteor.userId() })
+  return dropbox.name + " (#" + dropbox.uid + ")";
 };
 
 Template.accountPane.events({
@@ -171,13 +172,12 @@ Template.rightPane.maybeSelected = function () {
   return Selection.get(this._id) ? "selected" : "";
 };
 
-Template.rightPane.maybeExpired = function () {
-  return QueueManager.isInPast(this._id) ? "expired" : "";
+Template.rightPane.isInPast = function () {
+  return QueueManager.isInPast(this._id);
 };
 
 Template.rightPane.maybePlaying = function () {
-  var playing = (this._id === QueueManager.currentlyPlaying);
-  return playing ? "playing" : "";
+  return QueueManager.isCurrentlyPlaying(this._id) ? "playing" : "";
 };
 
 

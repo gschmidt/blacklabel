@@ -133,11 +133,13 @@
         </tr>
       </thead>
       {{#each queuedSongs}}
-      <tr class="entry {{maybeSelected}} {{maybeExpired}} {{maybePlaying}}">
-        <td>{{percentLoaded}}</td>
-        <td>{{username}}</td>
-        <td>{{name}}</td>
-      </tr>
+        {{#unless isInPast}}
+        <tr class="entry {{maybeSelected}} {{maybePlaying}}">
+          <td>{{percentLoaded}}</td>
+          <td>{{username}}</td>
+          <td>{{name}}</td>
+        </tr>
+        {{/unless}}
       {{/each}}
     </table>
   </div>

@@ -21,6 +21,7 @@ var _QueueManager = function () {
   self.deps = {}; // map from QueuedSong _id to Deps.Dependency
   self.currentlyPlaying = null; // QueuedSong _id of currently playing song
   self.transitionTimer = null; // setTimeout handle
+  self.mainDep = new Deps.Dependency; // for top-level changes
   Meteor.startup(function () {
     self.startup();
   });
@@ -192,6 +193,7 @@ _.extend(_QueueManager.prototype, {
     }
 
     self.currentlyPlaying = currentlyPlaying;
+    self.mainDep.changed();
   },
 
   fractionLoaded: function (qsid) {
@@ -219,6 +221,8 @@ _.extend(_QueueManager.prototype, {
   isInPast: function (qsid) {
     var self = this;
 
+    self.mainDep.depend();
+
     var threshold =
       self.currentlyPlaying ||
       PlayStatus.findOne().playItem ||
@@ -236,6 +240,13 @@ _.extend(_QueueManager.prototype, {
       return true;
 
     return me.order < them.order;
+  },
+
+  // True if qsid is currectly playing.
+  isCurrentlyPlaying: function (qsid) {
+    var self = this;
+    self.mainDep.depend();
+    return self.currentlyPlaying === qsid;
   }
 });
 
