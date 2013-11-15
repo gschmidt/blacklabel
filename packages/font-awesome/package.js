@@ -16,16 +16,6 @@ Package.describe({
 //   this up.
 
 Package.on_use(function(api) {
-  api.use('oauth2', ['client', 'server']);
-  api.use('oauth', ['client', 'server']);
-  api.use('http', ['server']);
-  api.use('underscore', 'client');
-  api.use('templating', 'client');
-  api.use('random', 'client');
-  api.use('service-configuration', ['client', 'server']);
-
-  api.export('Dropbox');
-
   api.add_files(
     [
       // This has been modified to change the relative path

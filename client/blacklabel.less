@@ -7,6 +7,24 @@ html, body {
     height: 100%;
 }
 
+.no-select {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/*****************************************************************************/
+
+.left-pane {
+    .no-select;
+}
+
+/*****************************************************************************/
+
+
 @chat-entry-height: 100px;
 
 .chat-outer {
@@ -47,3 +65,30 @@ html, body {
     resize: none;
 }
 
+/*****************************************************************************/
+
+.queue {
+    .no-select;
+}
+
+.queue .selected {
+    background-color: #d9edf7;
+}
+
+.queue table:focus {
+    outline: 0;
+}
+
+.queue .expired {
+    color: #ccc;
+}
+
+.queue .playing {
+    font-weight: bold;
+}
+
+/*****************************************************************************/
+
+.library .song:hover {
+    background-color: #eee;
+}

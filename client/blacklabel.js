@@ -1,5 +1,3 @@
-console.log("loading blacklabel.js");
-
 //////////////////////////////////////////////////////////////////////////////
 
 Template.login.loggingIn = function () {
@@ -53,8 +51,15 @@ Template.leftPane.events({
 
 //////////////////////////////////////////////////////////////////////////////
 
-Template.chatPane.events = function () {
-  console.log("{{events}} evaluated");
+Template.top.activityIs = function (what) {
+  return Session.equals("activity", what);
+};
+
+//////////////////////////////////////////////////////////////////////////////
+
+// XXX need to add scroll position management
+
+Template.chatPane.allEvents = function () {
   return Events.find();
 };
 
@@ -81,8 +86,7 @@ Template.chatPane.events({
 
 //////////////////////////////////////////////////////////////////////////////
 
-
-Template.top.events({
+Template.accountPane.events({
   'click .linkDropbox': function (evt) {
     Dropbox.requestCredential({}, function (tokenOrError) {
       if (typeof tokenOrError === "string")
@@ -95,28 +99,142 @@ Template.top.events({
 
 //////////////////////////////////////////////////////////////////////////////
 
-Template.dropboxes.dropboxes = function () {
+Template.libraryPane.dropboxes = function () {
   return Dropboxes.find();
 };
 
-Template.dropboxes.files = function () {
+Template.libraryPane.files = function () {
   return Files.find({dropbox: this._id});
 };
 
-Template.dropboxes.events({
+Template.libraryPane.events({
   'click .song': function () {
-    Meteor.call("getSongUrl", this._id, function (err, url) {
+    Meteor.call("enqueue", this._id, function (err) {
       if (err) {
-        alert("couldn't fetch url?");
-        return;
-      } else {
-        var player = $('#player');
-        player.attr('src',url);
-        player[0].play();
+        alert("couldn't queue song?");
       }
     });
   }
 });
 
+//////////////////////////////////////////////////////////////////////////////
 
-console.log("done loading blacklabel.js");
+// Map from qsid to true for selected items.
+// XXX provide an easy, public way to set up migration on ReactiveDicts
+Selection = new ReactiveDict(
+  Package.reload.Reload._migrationData('selection'));
+Package.reload.Reload._onMigrate('selection', function () {
+  return [true, {keys: Selection.getMigrationData()}];
+});
+
+//////////////////////////////////////////////////////////////////////////////
+
+// XXX I want multiple selection! and drag and drop!
+
+Template.rightPane.queuedSongs = function () {
+  return QueuedSongs.find({}, { sort: ['order'] });
+};
+
+Template.rightPane.percentLoaded = function () {
+  var fraction = QueueManager.fractionLoaded(this._id);
+  return (fraction * 100).toFixed(1) + "%";
+};
+
+Template.rightPane.username = function () {
+  var user = Meteor.users.findOne(this.who);
+  return user && user.username || "???";
+};
+
+Template.rightPane.name = function () {
+  var file = Files.findOne(this.file);
+  return file && file.path /* XXX temporary */ || "???";
+};
+
+Template.rightPane.maybeSelected = function () {
+  return Selection.get(this._id) ? "selected" : "";
+};
+
+Template.rightPane.maybeExpired = function () {
+  return QueueManager.isInPast(this._id) ? "expired" : "";
+};
+
+Template.rightPane.maybePlaying = function () {
+  var playing = (this._id === QueueManager.currentlyPlaying);
+  return playing ? "playing" : "";
+};
+
+
+Template.rightPane.events({
+  'click .entry': function (evt) {
+    var mode = "normal";
+    if (evt.ctrlKey || evt.metaKey)
+      mode = "toggle";
+    else if (evt.shiftKey)
+      mode = "range";
+
+    if (mode === "normal") {
+      // Clear existing selection
+      // XXX provide a public way to get keys on ReactiveDicts
+      _.each(Selection.keys, function (value, key) {
+        Selection.set(key, undefined);
+      });
+
+      Selection.set(this._id, true);
+    }
+
+    if (mode === "toggle") {
+      Selection.set(this._id, ! Selection.get(this._id));
+    }
+
+    if (mode === "range") {
+      // This is fairly primitive range selection behavior, but it'll
+      // do for Blacklabel.
+      //
+      // "Proper" multiple selection behavior is a lot more
+      // sophisticated in how it handles repeated shift-clicks, and in
+      // how it handles shift-up and shift-down as combined with
+      // shift-click and command-click. The OS X Finder does a good
+      // job.
+      var queue = QueuedSongs.find({}, { sort: ["order"] }).fetch();
+      var findIndex = function (id) {
+        for (var i = 0; i < queue.length; i++)
+          if (queue[i]._id === id)
+            return i;
+        return 0;
+      }
+
+      var from = findIndex(Session.get("lastClickedItem"));
+      var to = findIndex(this._id);
+
+      if (from > to) {
+        var swap = to;
+        to = from;
+        from = swap;
+      }
+
+      for (var i = from; i <= to; i++)
+        Selection.set(queue[i]._id, true);
+    }
+
+    Session.set("lastClickedItem", this._id);
+  },
+  'keydown': function (evt) {
+    if (evt.which === 8 || evt.which === 46) { // backspace, delete
+      var items = [];
+      // XXX it looks like keys hang around in selection forever, so
+      // that it grows without bound? setting to undefined should be
+      // made to release the memory..
+      console.log(Selection.keys);
+      _.each(Selection.keys, function (selected, id) {
+        if (selected === "true") {
+          items.push(id);
+          Selection.set(id, undefined);
+        }
+      });
+
+      Meteor.call('dequeue', items);
+      evt.preventDefault();
+      return;
+    }
+  }
+});

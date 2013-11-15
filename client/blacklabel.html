@@ -36,38 +36,50 @@
 
 <template name="top">
   <div class="container-fluid main-container">
+    <div class="banner">
+      <img src="/blacklabel.png">
+    </div>
     <div class="row-fluid main-row">
       <div class="span2 main-span">
         {{> leftPane }}
       </div>
 
       <div class="span5 main-span">
-        {{> chatPane }}
+        {{#if activityIs "chat"}}
+          {{> chatPane }}
+        {{/if}}
+        {{#if activityIs "library"}}
+          {{> libraryPane }}
+        {{/if}}
+        {{#if activityIs "account"}}
+          {{> accountPane }}
+        {{/if}}
       </div>
 
       <div class="span5 main-span">
-        <audio id="player" controls> </audio><br>
-        <h1>Queue</h1>
+        {{> rightPane }}
       </div>
     </div>
   </div>
 </template>
 
 <template name="leftPane">
-  <ul class="nav nav-pills nav-stacked">
-    {{#each activities}}
+  <div class="left-pane">
+    <ul class="nav nav-pills nav-stacked">
+      {{#each activities}}
       <li class="{{maybeActive}}">
         <a><i class="fa {{icon}} fa-2x fa-fw"></i>{{name}}</a>
       </li>
-    {{/each}}
-  </ul>
+      {{/each}}
+    </ul>
+  </div>
 </template>
 
 <template name="chatPane">
   <div class="chat-outer">
     <div class="chat-inner">
       <div class="chat-view">
-        {{#each events}}
+        {{#each allEvents}}
           <div class="chat-message">
             {{username}}: {{message}}
           </div>
@@ -81,21 +93,47 @@
 </template>
 
 <template name="accountPane">
-  <input type="button" class="linkDropbox" value="Link my dropbox"></input>
-  {{> dropboxes}}
+  <h1>Your Account</h1>
+  <br><br>
+  <h3>Dropbox</h3>
+  <input type="button" class="linkDropbox" value="Link a Dropbox">
 </template>
 
-
-<template name="dropboxes">
-  <h1>Linked Dropboxes</h1>
-  <ul>
-  {{#each dropboxes}}
-    <li>{{name}} #{{uid}}</li>
+<template name="libraryPane">
+  <div class="library">
+    <h1>Ah. The Library.</h1>
     <ul>
-    {{#each files}}
-      <li class="song">{{path}}</li>
-    {{/each}}
+      {{#each dropboxes}}
+        <li>{{name}} #{{uid}}</li>
+        <ul>
+          {{#each files}}
+          <li class="song">{{path}}</li>
+          {{/each}}
+        </ul>
+      {{/each}}
     </ul>
-  {{/each}}
-  </ul>
+  </div>
 </template>
+
+<template name="rightPane">
+  <div class="queue">
+    <h1>Queue</h1>
+    <table class="table table-condensed" tabindex="0">
+      <thead>
+        <tr>
+          <th>%</th>
+          <th>Who</th>
+          <th>Song</th>
+        </tr>
+      </thead>
+      {{#each queuedSongs}}
+      <tr class="entry {{maybeSelected}} {{maybeExpired}} {{maybePlaying}}">
+        <td>{{percentLoaded}}</td>
+        <td>{{username}}</td>
+        <td>{{name}}</td>
+      </tr>
+      {{/each}}
+    </table>
+  </div>
+</template>
+
