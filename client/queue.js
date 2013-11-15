@@ -219,13 +219,6 @@ _.extend(_QueueManager.prototype, {
   isInPast: function (qsid) {
     var self = this;
 
-    // XXX debugging hack, remove
-    var d = new Deps.Dependency;
-    setTimeout(function () {
-      d.changed();
-    }, 250);
-    d.depend();
-
     var threshold =
       self.currentlyPlaying ||
       PlayStatus.findOne().playItem ||

@@ -36,9 +36,6 @@
 
 <template name="top">
   <div class="container-fluid main-container">
-    <div class="banner">
-      <img src="/blacklabel.png">
-    </div>
     <div class="row-fluid main-row">
       <div class="span2 main-span">
         {{> leftPane }}
@@ -65,6 +62,7 @@
 
 <template name="leftPane">
   <div class="left-pane">
+    <img src="/blacklabel.png">
     <ul class="nav nav-pills nav-stacked">
       {{#each activities}}
       <li class="{{maybeActive}}">
@@ -95,8 +93,16 @@
 <template name="accountPane">
   <h1>Your Account</h1>
   <br><br>
+  I'll find something to put here.
+  <br><br>
+
   <h3>Dropbox</h3>
-  <input type="button" class="linkDropbox" value="Link a Dropbox">
+  {{#if haveDropbox}}
+    <p>Currently linked Dropbox: <b>{{linkedDropboxName}}</b></p>
+    <input type="button" class="unlinkDropbox" value="Unlink">
+  {{else}}
+    <input type="button" class="linkDropbox" value="Link your Dropbox">
+  {{/if}}
 </template>
 
 <template name="libraryPane">

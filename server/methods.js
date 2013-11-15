@@ -56,6 +56,10 @@ var trimQueue = function () {
 Meteor.methods({
   addDropbox: function (credentialToken) {
     check(credentialToken, String);
+
+    if (! this.userId)
+      throw new Meteor.Error("access-denied", "Must be logged in");
+
     var creds = Dropbox.retrieveCredential(credentialToken);
 
     var accessToken = creds.serviceData.accessToken;
@@ -65,15 +69,34 @@ Meteor.methods({
     if (! uid || ! name)
       throw new Meteor.Error('dropbox', "Dropbox returned incomplete response");
 
-    var existing = Dropboxes.findOne({uid: uid});
+    if (Dropboxes.findOne({ user: this.userId }))
+      throw new Meteor.Error('too-many', "You may only link one Dropbox at " +
+                             "a time");
+
+    var existing = Dropboxes.findOne({ uid: uid });
     if (existing)
       throw new Meteor.Error('already', "That Dropbox is already linked");
 
     Dropboxes.insert({
       accessToken: accessToken,
       name: name,
-      uid: uid
+      uid: uid,
+      user: this.userId
     });
+  },
+
+  removeDropbox: function (dropboxId) {
+    if (! this.userId)
+      throw new Meteor.Error("access-denied", "Must be logged in");
+
+    var dropbox = Dropboxes.findOne(dropboxId);
+    if (! dropbox)
+      throw new Meteor.Error("not-found", "No such Dropbox");
+
+    if (dropbox.user !== this.userId)
+      throw new Meteor.Error("access-denied", "That doesn't belong to you");
+
+    Dropboxes.remove({ _id: dropboxId, user: this.userId });
   },
 
   // XXX latency-compensate! (don't get the URL on the client ..)
@@ -136,6 +159,9 @@ Meteor.methods({
   // XXX latency-compensate! (don't get the URL on the client ..)
   dequeue: function (songIds) {
     check(songIds, [String]);
+
+    if (! this.userId)
+      throw new Meteor.Error("access-denied", "Must be logged in");
 
     // XXX races?
     trimQueue();

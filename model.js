@@ -1,3 +1,7 @@
+// accessToken: credential for making requests
+// name: human readable name
+// uid: dropbox user id
+// user: Meteor user _id of user that owns this dropbox
 Dropboxes = new Meteor.Collection('dropboxes');
 
 // dropbox (_id), path, rev, dirty (boolean)

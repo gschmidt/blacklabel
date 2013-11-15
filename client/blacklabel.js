@@ -86,6 +86,14 @@ Template.chatPane.events({
 
 //////////////////////////////////////////////////////////////////////////////
 
+Template.accountPane.haveDropbox = function () {
+  return Dropboxes.find({ user: Meteor.userId() }).count() > 0;
+};
+
+Template.accountPane.linkedDropboxName = function () {
+  return Dropboxes.findOne({ user: Meteor.userId() }).name;
+};
+
 Template.accountPane.events({
   'click .linkDropbox': function (evt) {
     Dropbox.requestCredential({}, function (tokenOrError) {
@@ -94,6 +102,15 @@ Template.accountPane.events({
       else
         alert("didn't work: " + tokenOrError);
     });
+  },
+  'click .unlinkDropbox': function (evt) {
+    Meteor.call("removeDropbox",
+                Dropboxes.findOne({ user: Meteor.userId() })._id,
+                function (err) {
+                  if (err)
+                    alert("Failed to unlink Dropbox?? " +
+                          "How is this possible?!");
+                });
   }
 });
 
