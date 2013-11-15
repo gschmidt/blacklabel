@@ -39,7 +39,8 @@ PlayStatus = new Meteor.Collection('playstatus');
 
 // Stuff on Meteor.user:
 // - invitationCode
-
+// - profile.invitedBy: _id of the inviting user
+//   (XXX this is insecure - user shouldn't be able to change it)
 Meteor.methods({
   'chat': function (message) {
     check(message, String);

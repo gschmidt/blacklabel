@@ -225,5 +225,32 @@ Meteor.methods({
     var code = generateInvitationCode();
     Meteor.users.update(this.userId, { $set: { invitationCode: code } });
     return code;
+  },
+
+  // Does not require login
+  getInvitationInfo: function (code) {
+    var invitedBy = Meteor.users.findOne({ invitationCode: code });
+    if (! invitedBy) {
+      sleep(500);
+      throw new Meteor.Error("not-found", "No such code");
+    }
+
+    return {
+      by: invitedBy.username,
+      songs: Files.find().count(),
+      users: Meteor.users.find().count()
+    };
   }
+});
+
+Accounts.onCreateUser(function (options, user) {
+  var invitedBy = Meteor.users.findOne({
+    invitationCode: options.invitationCode });
+
+  if (! invitedBy)
+    throw new Meteor.Error("access-denied", "Whoever informed you about " +
+                           "this service, didn't inform you enough");
+  user.profile = options.profile || {};
+  user.profile.invitedBy = invitedBy._id;
+  return user;
 });

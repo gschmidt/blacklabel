@@ -7,33 +7,115 @@
   {{#if currentUser}}
     {{> top}}
   {{else}}
-    {#if loggingIn}}
+    {{#if loggingIn}}
     {{else}}
-      {{> login}}
+      {{#if haveInvitationCode}}
+        {{> join}}
+      {{else}}
+        {{> login}}
+      {{/if}}
     {{/if}}
   {{/if}}
 </body>
 
-<template name="login">
-  <div class="loginForm">
-    <h1>Hello</h1>
-    <p>This is a private Blacklabel server. You must now present your
-      bona fides.</p>
-    {{#if loggingIn}}
-      Logging in ...
-    {{else}}
-      {{#if error}}
-        <div class="error">{{error}}</div>
+<template name="join">
+  <div class="container-fluid main-container">
+  <div class="row-fluid">
+    <div class="span3"> </div>
+    <div class="span6">
+      <hr>
+      <h1>Hello</h1>
+      <br><br>
+
+      <!-- XXX could use a bit of help with pluralize -->
+      <p>You were invited to this private Blacklabel server by
+      <b>{{by}}</b>. This Blacklabel server has <b>{{songCount}} songs</b> and
+      <b>{{userCount}} members</b>.
+      </p>
+
+      <br>
+
+      {{#if loggingIn}}
+        Logging in ...
+      {{else}}
+        {{#if error}}
+          <div class="error">{{error}}</div>
+        {{/if}}
       {{/if}}
-    {{/if}}
-    <label>Username: <input type="text" class="username"></label><br>
-    <label>Password: <input type="password" class="password"></label><br>
-    <input type="button" class="login" value="Enter server">
 
-    <br><br><br>
-    To create an account, open the console and type something like:<br>
-    <pre>Accounts.createUser({username: "you", password: "kitten"})</pre>
+      <br>
 
+      <form class="form-horizontal join-form" action="#">
+        <div class="control-group">
+          <label class="control-label" for="inputEmail">Username</label>
+          <div class="controls">
+            <input type="text" id="inputEmail" class="username"
+                   placeholder="Username">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="inputPassword">Password</label>
+          <div class="controls">
+            <input type="password" id="inputPassword" class="password"
+                   placeholder="Password">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="controls">
+            <button type="submit" class="btn create-account">Enter server
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="span3">
+    </div>
+</template>
+
+
+<template name="login">
+  <div class="container-fluid main-container">
+    <div class="loginForm">
+      <h1>Blacklabel</h1>
+      <br>
+      <p>This is a private server. Login is required.</p>
+      <br>
+      {{#if loggingIn}}
+        Logging in ...
+      {{else}}
+        {{#if error}}
+          <div class="error">{{error}}</div>
+        {{/if}}
+      {{/if}}
+
+      <form class="form-horizontal join-form" action="#">
+        <div class="control-group">
+          <label class="control-label" for="inputEmail">Username</label>
+          <div class="controls">
+            <input type="text" id="inputEmail" class="username"
+                   placeholder="Username">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label class="control-label" for="inputPassword">Password</label>
+          <div class="controls">
+            <input type="password" id="inputPassword" class="password"
+                   placeholder="Password">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <div class="controls">
+            <button type="submit" class="btn login">Enter server
+            </button>
+          </div>
+        </div>
+      </form>
+    </div>
   </div>
 </template>
 
@@ -107,7 +189,9 @@
   <div class="account-pane">
     <h1>Your Account</h1>
     <br><br>
-    I'll find something to put here.
+    You were recruited by <b>{{invitedBy}}</b>.
+    {{{whoYouInvited}}}
+
     <br><br>
 
     <h3>Dropbox</h3>

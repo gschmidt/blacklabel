@@ -1,15 +1,88 @@
 Meteor.autorun(function () {
+  Meteor.userId(); // create a dependency
   Meteor.call('getInvitationCode', function (err, code) {
     if (! err)
       Session.set("invitationCode", code);
   });
 });
 
+var locationDep = new Deps.Dependency;
+window.addEventListener("popstate", function (event) {
+  locationDep.changed();
+});
+
+var providedInvitationCode = function () {
+  locationDep.depend();
+  var match = document.location.pathname.match(/^\/engulf\/(.+)$/);
+  return match ? match[1] : null;
+};
+
+Meteor.autorun(function () {
+  var code = providedInvitationCode();
+  if (code) {
+    if (Meteor.userId())
+      Meteor.logout();
+
+    Meteor.call('getInvitationInfo', code, function (err, info) {
+    if (! err)
+      Session.set("invitationInfo", info);
+    });
+  }
+});
+
+
+UI.body.haveInvitationCode = function () {
+  return !! providedInvitationCode();
+};
+
 //////////////////////////////////////////////////////////////////////////////
 
-Template.login.loggingIn = function () {
-  return Meteor.loggingIn();
+Template.join.by = function () {
+  var info = Session.get("invitationInfo");
+  return info && info.by || "???";
 };
+
+Template.join.songCount = function () {
+  var info = Session.get("invitationInfo");
+  return info && info.songs || "???";
+};
+
+Template.join.userCount = function () {
+  var info = Session.get("invitationInfo");
+  return info && info.users || "???";
+};
+
+Template.join.error = function () {
+  return Session.get("loginError");
+};
+
+Template.join.events({
+  'submit': function (evt) {
+    var username = $('.join-form .username').val().trim();
+    var password = $('.join-form .password').val().trim();
+    if (! username || ! password) {
+      Session.set("loginError", "You have to fill in. Both. Things.");
+      return;
+    }
+    Accounts.createUser({
+      username: username,
+      password: password,
+      invitationCode: providedInvitationCode()
+    }, function (err) {
+      if (err) {
+        Session.set("loginError", "No good. " + err.reason);
+        return;
+      }
+      history.pushState({}, "", "/");
+      Session.set("loginError", null);
+    });
+
+    evt.preventDefault();
+  }
+});
+
+
+//////////////////////////////////////////////////////////////////////////////
 
 Template.login.error = function () {
   return Session.get("loginError");
@@ -18,7 +91,7 @@ Template.login.error = function () {
 Template.login.events({
   // XXX really looking forward to the day when we can find elements
   // relative to a template
-  'click .login': function (evt) {
+  'submit': function (evt) {
     var username = $('.loginForm .username').val().trim();
     var password = $('.loginForm .password').val().trim();
     if (! username || ! password) {
@@ -33,6 +106,7 @@ Template.login.events({
         Session.set("loginError", null);
       }
     });
+    evt.preventDefault();
   }
 });
 
@@ -131,6 +205,34 @@ Template.accountPane.invitationLink = function () {
     return "[loading your code]";
   return Meteor.absoluteUrl("engulf/" + code);
 };
+
+Template.accountPane.invitedBy = function () {
+  var user = Meteor.user();
+  if (! user || ! user.profile || ! user.profile.invitedBy)
+    return "nobody";
+  var by = Meteor.users.findOne(user.profile.invitedBy);
+  return by && by.username || "???";
+};
+
+Template.accountPane.whoYouInvited = function () {
+  var invitees =
+    Meteor.users.find({ 'profile.invitedBy': Meteor.userId() }).fetch();
+
+  var names = _.map(invitees, function (i) {
+    return "<b>" + (i.username || '???').replace(/[<>]/g, '.') + "</b>";
+  });
+
+  if (names.length === 0)
+    return "You haven't recruited anyone yet.";
+  else if (names.length === 1)
+    return "You recruited " + names[0] + ".";
+  else {
+    var allButLast = names.slice(0, names.length - 1);
+    var last = names[names.length - 1];
+    return "You recruited " + allButLast.join(", ") + " and " + last + ".";
+  }
+};
+
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -268,7 +370,6 @@ Template.rightPane.events({
       // XXX it looks like keys hang around in selection forever, so
       // that it grows without bound? setting to undefined should be
       // made to release the memory..
-      console.log(Selection.keys);
       _.each(Selection.keys, function (selected, id) {
         if (selected === "true") {
           items.push(id);
