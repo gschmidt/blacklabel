@@ -121,6 +121,22 @@ html, body {
     font-weight: bold;
 }
 
+/*
+   Move rule lines to bottom to match the way we think about drop
+   areas (as being after, rather than before each row).
+*/
+
+.queue td, .queue th {
+    border-top: 0;
+    border-bottom: 1px solid #dddddd;
+}
+
+.queue tr:last-child td {
+    border-bottom: 0;
+}
+
+/* Drag and drop animations */
+
 .queue tr td {
     transition: line-height .25s, padding-top .25s, padding-bottom .25s,
                 border-width .25s;
@@ -132,6 +148,10 @@ html, body {
     padding-top: 0px;
     padding-bottom: 0px;
     border-width: 0px;
+}
+
+.queue tr.drop-after td, .queue tr.drop-after th {
+    border-bottom: 1px solid red;
 }
 
 

@@ -277,8 +277,6 @@ Package.reload.Reload._onMigrate('selection', function () {
 
 //////////////////////////////////////////////////////////////////////////////
 
-// XXX I want multiple selection! and drag and drop!
-
 Template.rightPane.queuedSongs = function () {
   return QueuedSongs.find({}, { sort: ['order'] });
 };
@@ -304,6 +302,18 @@ Template.rightPane.maybeSelected = function () {
 Template.rightPane.maybeDragging = function () {
   var dqi = Session.get("draggingQueueItems") || [];
   return _.contains(dqi, this._id) ? "dragging" : "";
+};
+
+Template.rightPane.maybeDropAfter = function () {
+  // XXX would be nice to write 'dropInQueue.after' for better
+  // reactive performance
+  var drop = Session.get("dropInQueue");
+  if (! drop)
+    return "";
+  if ((this._id && drop.after === this._id) ||
+      (! this._id && drop.atTop /* header */))
+    return "drop-after";
+  return "";
 };
 
 Template.rightPane.isInPast = function () {
@@ -386,18 +396,85 @@ Template.rightPane.events({
       return;
     }
   },
-  'dragstart': function () {
+  'dragstart': function (evt) {
+    // If you start the drag outside the selection, make the dragged
+    // item be the selection.
+    if (! Selection.get(this._id)) {
+      // XXX use of private interface
+      _.each(Selection.keys, function (value, key) {
+        Selection.set(key, undefined);
+      });
+      Selection.set(this._id, true);
+    }
+
     var items = [];
-    _.each(Selection.keys, function (selected, id) {
-      if (selected === "true" && ! QueueManager.isInPast(id))
-        items.push(id);
+    QueuedSongs.find({}, { sort: ["order"] }).forEach(function (qs) {
+      if (Selection.get(qs._id) === true &&
+          ! QueueManager.isInPast(qs._id))
+        items.push(qs._id);
     });
 
     Session.set("draggingQueueItems", items);
-    console.log("start", items);
+    evt.originalEvent.dataTransfer.effectAllowed = "move";
+    evt.originalEvent.dataTransfer.setData(
+      "application/x-blacklabel-queue-move", "");
   },
   'dragend': function () {
     Session.set("draggingQueueItems", []);
-    console.log("end", Session.get("draggingQueueItems"));
+    Session.set("dropInQueue", null);
+  },
+  'dragover .entry': function (evt) {
+    evt.preventDefault(); // necessary for drop to happen
+
+    var pageY;
+    if (_.has(evt, 'pageY'))
+      pageY = evt.pageY;
+    else if (_.has(evt.originalEvent, 'pageY'))
+      pageY = evt.originalEvent.pageY;
+    else {
+      // OK, so this property is nonstandard, but provided by jQuery
+      // and at least modern Chrome and Firefox. But, jQuery doesn't
+      // provide it on dragover (yet?). If you get this error you
+      // should either fix that about jQuery or cut and paste the
+      // jQuery logic here.
+      Log.error("Unsupported browser -- no pageY");
+      return;
+    }
+
+    var elt = $('.item-' + this._id);
+    var y = pageY - elt.offset().top;
+    var ymax = elt.height();
+    if (! ymax)
+      return;
+    if (y / ymax > .5) {
+      Session.set("dropInQueue", { after: this._id });
+    } else {
+      // Find previous item
+      var prev = QueuedSongs.findOne({ order: { $lt: this.order } },
+                                     { sort: { order: -1 } });
+      if (! prev || QueueManager.isInPast(prev._id)) {
+        Session.set("dropInQueue", { atTop: true });
+      }
+      else
+        Session.set("dropInQueue", { after: prev._id });
+    }
+
+    evt.originalEvent.dataTransfer.dropEffect = "move";
+  },
+  'dragleave .entry': function (evt) {
+    Session.set("dropInQueue", null);
+  },
+  'drop .entry': function (evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+
+    if (Session.get("draggingQueueItems")) {
+      // This is a queue reordering
+      Meteor.call("moveInQueue",
+                  Session.get("draggingQueueItems"),
+                  (Session.get("dropInQueue") || {}).after || null);
+    } else {
+      Log.error("bad drop in queue?");
+    }
   }
 });

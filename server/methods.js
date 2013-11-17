@@ -103,7 +103,6 @@ Meteor.methods({
     // just removed and fix up PlayStatus.. meh, whatever
   },
 
-  // XXX latency-compensate! (don't get the URL on the client ..)
   enqueue: function (songId) {
     check(songId, String);
 
@@ -160,7 +159,6 @@ Meteor.methods({
     }
   },
 
-  // XXX latency-compensate! (don't get the URL on the client ..)
   dequeue: function (songIds) {
     check(songIds, [String]);
 
@@ -176,6 +174,66 @@ Meteor.methods({
     var ps = PlayStatus.findOne();
     if (ps.playItem && ! QueuedSongs.findOne(ps.playItem)) {
       var first = QueuedSongs.findOne({}, {sort: ['order']});
+      var now = new Date;
+      PlayStatus.update({}, { $set: {
+        playTime: first ? new Date(now.getTime() + PREHEAT_TIME_SECS * 1000)
+          : null,
+        playItem: first ? first._id : null
+      }});
+    }
+  },
+
+  // qsids: array of items to move, in order of new appearance
+  // after: qsid to move after, or null to move above currently playing item
+  moveInQueue: function (qsids, after) {
+    check(qsids, [String]);
+    check(after, Match.OneOf(String, null));
+
+    // XXX probably races all over the place
+    trimQueue();
+    var queue = QueuedSongs.find({}, { sort: [ 'order' ] }).fetch();
+
+    var preOrder, postOrder;
+    if (! after || ! queue.length) {
+      preOrder = 0;
+      postOrder = queue.length ? queue[0].order : 1;
+    } else {
+      for (var i = 0; i < queue.length; i++) {
+        if (queue[i]._id === after) {
+          preOrder = queue[i].order;
+          if (i + 1 < queue.length)
+            postOrder = queue[i + 1].order;
+          else
+            postOrder = preOrder + 1;
+          break;
+        }
+      }
+      if (i === queue.length) {
+        // didn't find; put at end
+        preOrder = queue[queue.length - 1].order;
+        postOrder = preOrder + 1;
+      }
+    }
+
+    var existsInQueue = {};
+    _.each(queue, function (item) {
+      existsInQueue[item._id] = true;
+    });
+
+    var step = (postOrder - preOrder) / (qsids.length + 1);
+    for (var i = 0; i < qsids.length; i++) {
+      if (! existsInQueue[qsids[i]])
+        continue;
+      QueuedSongs.update(qsids[i], {
+        $set: { order: preOrder + (i + 1) * step }
+      });
+    }
+
+    // If this changed the playing item, start playing the new item
+    // from the beginning.
+    var ps = PlayStatus.findOne();
+    var first = QueuedSongs.findOne({}, {sort: ['order']});
+    if (ps.playItem !== (first && first._id || null)) {
       var now = new Date;
       PlayStatus.update({}, { $set: {
         playTime: first ? new Date(now.getTime() + PREHEAT_TIME_SECS * 1000)

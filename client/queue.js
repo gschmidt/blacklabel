@@ -20,6 +20,7 @@ var _QueueManager = function () {
   self.startTime = {}; // map from QueuedSong _id to seconds or null
   self.deps = {}; // map from QueuedSong _id to Deps.Dependency
   self.currentlyPlaying = null; // QueuedSong _id of currently playing song
+  self.topItem = null; // QueuedSong _id of top song (even if not playing yet)
   self.transitionTimer = null; // setTimeout handle
   self.mainDep = new Deps.Dependency; // for top-level changes
   Meteor.startup(function () {
@@ -48,6 +49,13 @@ _.extend(_QueueManager.prototype, {
               (self.currentlyPlaying === qsid && a.paused))
             self.update();
           self.deps[qsid] && self.deps[qsid].changed();
+        });
+        // XXX debugging
+        _.each(["abort", "error", "stalled", "waiting"], function (which) {
+          a.addEventListener(which, function () {
+            console.log("AUDIO: " + which +
+                        (qsid === self.currentlyPlaying ? " [playing]" : ""));
+          });
         });
 
         a.src = fields.url;
@@ -192,6 +200,13 @@ _.extend(_QueueManager.prototype, {
     }
 
     self.currentlyPlaying = currentlyPlaying;
+    if (currentlyPlaying)
+      self.topItem = currentlyPlaying
+    else if ((+ ps.playTime) / 1000 > now)
+      self.topItem = ps.playItem;
+    else
+      self.topItem = null;
+
     self.mainDep.changed();
   },
 
@@ -250,6 +265,14 @@ _.extend(_QueueManager.prototype, {
     var self = this;
     self.mainDep.depend();
     return self.currentlyPlaying === qsid;
+  },
+
+  // True if qsid is the top song in the queue (even if it isn't
+  // playing because it's scheduled slightly in the future).
+  isTopItem: function (qsid) {
+    var self = this;
+    self.mainDep.depend();
+    return self.topItem === qsid;
   }
 });
 

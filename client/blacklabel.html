@@ -257,7 +257,7 @@
     <h1>Queue</h1>
     <table class="table table-condensed" tabindex="0">
       <thead>
-        <tr>
+        <tr class="{{maybeDropAfter}}">
           <th>%</th>
           <th>Who</th>
           <th>Song</th>
@@ -265,7 +265,8 @@
       </thead>
       {{#each queuedSongs}}
         {{#unless isInPast}}
-        <tr class="entry {{maybePlaying}} {{maybeSelected}} {{maybeDragging}}"
+        <tr class="entry {{maybePlaying}} {{maybeSelected}} {{maybeDragging}}
+                   {{maybeDropAfter}} item-{{_id}}"
             draggable="true">
           <td>{{percentLoaded}}</td>
           <td>{{username}}</td>
