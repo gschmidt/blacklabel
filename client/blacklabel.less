@@ -121,6 +121,20 @@ html, body {
     font-weight: bold;
 }
 
+.queue tr td {
+    transition: line-height .25s, padding-top .25s, padding-bottom .25s,
+                border-width .25s;
+    overflow: hidden;
+}
+
+.queue tr.dragging td {
+    line-height: 0px;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    border-width: 0px;
+}
+
+
 /*****************************************************************************/
 
 .library {

@@ -265,7 +265,8 @@
       </thead>
       {{#each queuedSongs}}
         {{#unless isInPast}}
-        <tr class="entry {{maybeSelected}} {{maybePlaying}}">
+        <tr class="entry {{maybePlaying}} {{maybeSelected}} {{maybeDragging}}"
+            draggable="true">
           <td>{{percentLoaded}}</td>
           <td>{{username}}</td>
           {{#with file}}

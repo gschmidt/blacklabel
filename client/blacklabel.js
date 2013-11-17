@@ -301,6 +301,11 @@ Template.rightPane.maybeSelected = function () {
   return Selection.get(this._id) ? "selected" : "";
 };
 
+Template.rightPane.maybeDragging = function () {
+  var dqi = Session.get("draggingQueueItems") || [];
+  return _.contains(dqi, this._id) ? "dragging" : "";
+};
+
 Template.rightPane.isInPast = function () {
   return QueueManager.isInPast(this._id);
 };
@@ -308,7 +313,6 @@ Template.rightPane.isInPast = function () {
 Template.rightPane.maybePlaying = function () {
   return QueueManager.isCurrentlyPlaying(this._id) ? "playing" : "";
 };
-
 
 Template.rightPane.events({
   'click .entry': function (evt) {
@@ -381,5 +385,19 @@ Template.rightPane.events({
       evt.preventDefault();
       return;
     }
+  },
+  'dragstart': function () {
+    var items = [];
+    _.each(Selection.keys, function (selected, id) {
+      if (selected === "true" && ! QueueManager.isInPast(id))
+        items.push(id);
+    });
+
+    Session.set("draggingQueueItems", items);
+    console.log("start", items);
+  },
+  'dragend': function () {
+    Session.set("draggingQueueItems", []);
+    console.log("end", Session.get("draggingQueueItems"));
   }
 });
