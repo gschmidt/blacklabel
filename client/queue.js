@@ -228,7 +228,7 @@ _.extend(_QueueManager.prototype, {
 
     var threshold =
       self.currentlyPlaying ||
-      ps.playItem ||
+      (ps.playTime > new Date && ps.playItem) ||
       null;
 
     if (threshold === null)
