@@ -316,6 +316,10 @@ Template.rightPane.maybeDropAfter = function () {
   return "";
 };
 
+Template.rightPane.trueIfDraggable = function () {
+  return Selection.get(this._id) ? "true" : "";
+};
+
 Template.rightPane.isInPast = function () {
   return QueueManager.isInPast(this._id);
 };
@@ -397,16 +401,6 @@ Template.rightPane.events({
     }
   },
   'dragstart': function (evt) {
-    // If you start the drag outside the selection, make the dragged
-    // item be the selection.
-    if (! Selection.get(this._id)) {
-      // XXX use of private interface
-      _.each(Selection.keys, function (value, key) {
-        Selection.set(key, undefined);
-      });
-      Selection.set(this._id, true);
-    }
-
     var items = [];
     QueuedSongs.find({}, { sort: ["order"] }).forEach(function (qs) {
       if (Selection.get(qs._id) === true &&

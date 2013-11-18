@@ -267,7 +267,7 @@
         {{#unless isInPast}}
         <tr class="entry {{maybePlaying}} {{maybeSelected}} {{maybeDragging}}
                    {{maybeDropAfter}} item-{{_id}}"
-            draggable="true">
+            draggable="{{trueIfDraggable}}">
           <td>{{percentLoaded}}</td>
           <td>{{username}}</td>
           {{#with file}}
